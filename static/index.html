@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Meta Launch Calculator</title>
+<title>Google & Meta Ads — Калькулятор окупності</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="/static/vendor/xlsx.full.min.js"></script>
@@ -32,9 +32,8 @@
   }
   .wrap{max-width:1200px;margin:0 auto;padding:28px 22px 60px}
   .top{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:14px}
-  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px;letter-spacing:-.3px}
-  .brand .dot{width:26px;height:26px;border-radius:50%;background:var(--red);display:inline-block;position:relative}
-  .brand .dot::after{content:"";position:absolute;inset:7px;border-radius:50%;background:#fff}
+  .brand{display:flex;align-items:center}
+  .brand img.mark{height:30px;width:auto;display:block}
   .pill{background:var(--pill);color:#fff;font-size:12px;font-weight:600;padding:7px 14px;border-radius:999px;letter-spacing:.2px}
   h1{font-size:30px;font-weight:800;letter-spacing:-.6px;margin:0 0 4px}
   .sub{color:var(--muted);font-size:14px;margin-bottom:22px;max-width:680px;line-height:1.5}
@@ -114,12 +113,14 @@
 <body>
 <div class="wrap">
   <div class="top">
-    <div class="brand"><span class="dot"></span>promodo</div>
-    <span class="pill">Meta Ads · Окупність запуску</span>
+    <div class="brand">
+      <img class="mark" src="/static/promodo-logo.png" alt="Promodo">
+    </div>
+    <span class="pill">Google &amp; Meta Ads · Окупність запуску</span>
   </div>
 
-  <h1>Калькулятор окупності та цільових метрик</h1>
-  <p class="sub">Швидко прикинути бюджет, допустиму CPA, очікуваний трафік і окупність запуску в Meta. Рахує в обидва боки: від бюджету до результату або від цілі до потрібного бюджету. Усі витрати з ПДВ та комісією агенції.</p>
+  <h1>Google &amp; Meta Ads · Калькулятор окупності</h1>
+  <p class="sub">Швидко прикинути бюджет, допустиму CPA, очікуваний трафік і окупність запуску в Google Ads або Meta. Рахує в обидва боки: від бюджету до результату або від цілі до потрібного бюджету. Усі витрати з ПДВ та комісією агенції.</p>
 
   <div class="grid">
     <!-- INPUTS -->
@@ -236,7 +237,7 @@
 
   <div class="foot">
     Розрахунок орієнтовний і будується на введених середніх значеннях. Реальні CPC, CR і середній чек коливаються по аудиторіях, плейсментах і періодах.<br>
-    Promodo · інструмент для планування запусків у Meta Ads
+    Promodo · інструмент для планування запусків у Google Ads та Meta
   </div>
 </div>
 
@@ -371,7 +372,7 @@ function exportXlsx(){
   const stamp = now.toLocaleString('uk-UA');
 
   const rows = [
-    ['Калькулятор окупності Meta Ads — Promodo'],
+    ['Калькулятор окупності Google & Meta Ads — Promodo'],
     ['Дата розрахунку', stamp],
     ['Режим', modeLbl + (goalLbl ? ('  ·  '+goalLbl) : '')],
     [],
