@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meta Launch Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="/static/vendor/xlsx.full.min.js"></script>
+<style>
+  :root{
+    --red:#E10600;
+    --red-d:#B80500;
+    --ink:#111315;
+    --muted:#6B7177;
+    --line:#E7E9EC;
+    --bg:#F4F5F7;
+    --card:#FFFFFF;
+    --pill:#15171A;
+    --accent:#FF5A1F;
+    --accent2:#FF8A3D;
+    --good:#1E9E5A;
+    --warn:#E08A00;
+    --bad:#D32F2F;
+    --r:22px;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;font-family:'Inter',system-ui,sans-serif;
+    background:var(--bg);color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1200px;margin:0 auto;padding:28px 22px 60px}
+  .top{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:14px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px;letter-spacing:-.3px}
+  .brand .dot{width:26px;height:26px;border-radius:50%;background:var(--red);display:inline-block;position:relative}
+  .brand .dot::after{content:"";position:absolute;inset:7px;border-radius:50%;background:#fff}
+  .pill{background:var(--pill);color:#fff;font-size:12px;font-weight:600;padding:7px 14px;border-radius:999px;letter-spacing:.2px}
+  h1{font-size:30px;font-weight:800;letter-spacing:-.6px;margin:0 0 4px}
+  .sub{color:var(--muted);font-size:14px;margin-bottom:22px;max-width:680px;line-height:1.5}
+
+  .grid{display:grid;grid-template-columns:1.05fr 1.35fr;gap:20px;align-items:start}
+  @media(max-width:920px){.grid{grid-template-columns:1fr}}
+
+  .card{background:var(--card);border-radius:var(--r);padding:24px;box-shadow:0 1px 2px rgba(16,20,24,.04),0 8px 30px rgba(16,20,24,.05)}
+  .card h2{font-size:14px;font-weight:700;margin:0 0 18px;display:flex;align-items:center;gap:9px}
+  .badge{background:var(--pill);color:#fff;font-size:11px;font-weight:600;padding:5px 11px;border-radius:999px}
+
+  .moderow{display:flex;gap:8px;margin-bottom:20px;background:#F0F1F4;padding:5px;border-radius:14px}
+  .moderow button{flex:1;border:0;background:transparent;padding:10px 8px;border-radius:10px;font-weight:600;font-size:13px;color:var(--muted);cursor:pointer;transition:.15s}
+  .moderow button.on{background:#fff;color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.08)}
+
+  .field{margin-bottom:15px}
+  .field label{display:block;font-size:12.5px;font-weight:600;margin-bottom:6px;color:#33373B}
+  .field .hint{font-weight:400;color:var(--muted);font-size:11.5px}
+  .inputwrap{position:relative;display:flex;align-items:center}
+  input[type=number]{
+    width:100%;border:1px solid var(--line);background:#fff;border-radius:12px;
+    padding:12px 42px 12px 13px;font-size:15px;font-weight:600;font-family:inherit;color:var(--ink);outline:none;transition:.15s
+  }
+  input[type=number]:focus{border-color:var(--red);box-shadow:0 0 0 3px rgba(225,6,0,.10)}
+  input::-webkit-outer-spin-button,input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  input[type=number]{-moz-appearance:textfield}
+  .unit{position:absolute;right:13px;font-size:13px;color:var(--muted);font-weight:600;pointer-events:none}
+
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+  details.adv{margin-top:6px;border-top:1px dashed var(--line);padding-top:14px}
+  details.adv summary{cursor:pointer;font-size:12.5px;font-weight:600;color:var(--red);list-style:none;user-select:none}
+  details.adv summary::-webkit-details-marker{display:none}
+  details.adv summary::before{content:"+ ";font-weight:800}
+  details.adv[open] summary::before{content:"– "}
+  details.adv .body{margin-top:14px}
+
+  /* results */
+  .hero{display:flex;flex-direction:column;gap:16px}
+  .heroband{background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:18px;padding:20px 22px;color:#fff;position:relative;overflow:hidden}
+  .heroband::after{content:"";position:absolute;right:-30px;top:-30px;width:140px;height:140px;border-radius:50%;background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.35),transparent 60%)}
+  .heroband .lbl{font-size:12px;font-weight:600;opacity:.92}
+  .heroband .big{font-size:38px;font-weight:800;letter-spacing:-1px;margin-top:2px;line-height:1}
+  .heroband .note{font-size:12px;opacity:.9;margin-top:6px}
+
+  .statgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+  @media(max-width:560px){.statgrid{grid-template-columns:1fr 1fr}}
+  .stat{background:#FAFBFC;border:1px solid var(--line);border-radius:14px;padding:14px 14px}
+  .stat .n{font-size:10.5px;font-weight:600;color:var(--muted);display:flex;align-items:center;gap:6px;margin-bottom:6px}
+  .stat .n b{width:18px;height:18px;border-radius:50%;background:var(--pill);color:#fff;font-size:9px;display:flex;align-items:center;justify-content:center;font-weight:700}
+  .stat .v{font-size:21px;font-weight:800;letter-spacing:-.4px}
+  .stat .s{font-size:11px;color:var(--muted);margin-top:3px}
+
+  .splitcard{background:#FAFBFC;border:1px solid var(--line);border-radius:16px;padding:16px 18px}
+  .splitcard h3{font-size:12px;font-weight:700;margin:0 0 12px;color:#33373B}
+  .row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;font-size:13.5px;border-bottom:1px solid #EFF1F3}
+  .row:last-child{border-bottom:0}
+  .row .k{color:var(--muted);font-weight:500}
+  .row .vv{font-weight:700}
+  .row.total .k{color:var(--ink);font-weight:700}
+  .row.total .vv{color:var(--red);font-size:16px}
+
+  .verdict{border-radius:14px;padding:13px 16px;font-size:13px;font-weight:600;display:flex;gap:10px;align-items:flex-start;line-height:1.45}
+  .verdict.good{background:#E7F6EE;color:#13703f}
+  .verdict.warn{background:#FFF4E0;color:#8a5800}
+  .verdict.bad{background:#FCEBEB;color:#a32020}
+  .verdict .ic{font-size:16px;line-height:1}
+
+  .exportbtn{display:inline-flex;align-items:center;gap:9px;background:var(--pill);color:#fff;border:0;border-radius:12px;padding:13px 18px;font-size:13.5px;font-weight:600;font-family:inherit;cursor:pointer;transition:.15s;width:100%;justify-content:center}
+  .exportbtn:hover{background:#000}
+  .exportbtn:active{transform:translateY(1px)}
+  .exportbtn svg{width:17px;height:17px}
+
+  .foot{margin-top:26px;color:var(--muted);font-size:11.5px;text-align:center;line-height:1.6}
+  .arrow{display:inline-block;transform:rotate(0deg);color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="brand"><span class="dot"></span>promodo</div>
+    <span class="pill">Meta Ads · Окупність запуску</span>
+  </div>
+
+  <h1>Калькулятор окупності та цільових метрик</h1>
+  <p class="sub">Швидко прикинути бюджет, допустиму CPA, очікуваний трафік і окупність запуску в Meta. Рахує в обидва боки: від бюджету до результату або від цілі до потрібного бюджету. Усі витрати з ПДВ та комісією агенції.</p>
+
+  <div class="grid">
+    <!-- INPUTS -->
+    <div class="card">
+      <h2><span class="badge">Вхідні дані</span></h2>
+
+      <div class="moderow">
+        <button id="mForward" class="on" onclick="setMode('forward')">Від бюджету → результат</button>
+        <button id="mReverse" onclick="setMode('reverse')">Від цілі → бюджет</button>
+      </div>
+
+      <!-- FORWARD-only input -->
+      <div class="field" id="budgetField">
+        <label>Рекламний бюджет <span class="hint">(нетто, в кабінет, без ПДВ і комісії)</span></label>
+        <div class="inputwrap"><input type="number" id="budget" value="50000" oninput="calc()"><span class="unit">грн</span></div>
+      </div>
+
+      <!-- REVERSE-only inputs -->
+      <div id="goalFields" style="display:none">
+        <div class="field">
+          <label>Тип цілі</label>
+          <div class="moderow" style="margin-bottom:0">
+            <button id="gTx" class="on" onclick="setGoal('tx')" style="font-size:12px">Транзакції</button>
+            <button id="gRev" onclick="setGoal('rev')" style="font-size:12px">Дохід</button>
+          </div>
+        </div>
+        <div class="field" id="goalTxField">
+          <label>Скільки транзакцій треба отримати</label>
+          <div class="inputwrap"><input type="number" id="goalTx" value="100" oninput="calc()"><span class="unit">шт</span></div>
+        </div>
+        <div class="field" id="goalRevField" style="display:none">
+          <label>Цільовий дохід з запуску</label>
+          <div class="inputwrap"><input type="number" id="goalRev" value="500000" oninput="calc()"><span class="unit">грн</span></div>
+        </div>
+      </div>
+
+      <div class="two">
+        <div class="field">
+          <label>Середній чек</label>
+          <div class="inputwrap"><input type="number" id="aov" value="2500" oninput="calc()"><span class="unit">грн</span></div>
+        </div>
+        <div class="field">
+          <label>Конверсія сайту (CR)</label>
+          <div class="inputwrap"><input type="number" id="cr" value="1.5" step="0.1" oninput="calc()"><span class="unit">%</span></div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Поточний CPC <span class="hint">(факт з кабінету)</span></label>
+        <div class="inputwrap"><input type="number" id="cpc" value="6" step="0.1" oninput="calc()"><span class="unit">грн</span></div>
+      </div>
+
+      <details class="adv">
+        <summary>Витрати та цільові пороги</summary>
+        <div class="body">
+          <div class="two">
+            <div class="field">
+              <label>ПДВ на бюджет</label>
+              <div class="inputwrap"><input type="number" id="vat" value="20" step="1" oninput="calc()"><span class="unit">%</span></div>
+            </div>
+            <div class="field">
+              <label>Комісія агенції</label>
+              <div class="inputwrap"><input type="number" id="fee" value="12" step="1" oninput="calc()"><span class="unit">%</span></div>
+            </div>
+          </div>
+          <div class="field">
+            <label>Цільова ДРР <span class="hint">(частка реклами в доході, для допустимої CPA)</span></label>
+            <div class="inputwrap"><input type="number" id="crr" value="20" step="1" oninput="calc()"><span class="unit">%</span></div>
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <label>База комісії</label>
+            <div class="moderow" style="margin-bottom:0">
+              <button id="fbNet" class="on" onclick="setFeeBase('net')" style="font-size:12px">% від бюджету</button>
+              <button id="fbGross" onclick="setFeeBase('gross')" style="font-size:12px">% від бюджету+ПДВ</button>
+            </div>
+          </div>
+        </div>
+      </details>
+    </div>
+
+    <!-- RESULTS -->
+    <div class="card hero">
+      <div class="heroband">
+        <div class="lbl" id="heroLbl">Очікуваний дохід із запуску</div>
+        <div class="big" id="heroVal">—</div>
+        <div class="note" id="heroNote"></div>
+      </div>
+
+      <div class="verdict" id="verdict"><span class="ic">●</span><span id="verdictTxt"></span></div>
+
+      <div class="statgrid">
+        <div class="stat"><div class="n"><b>01</b>Кліки / трафік</div><div class="v" id="sClicks">—</div><div class="s">за поточним CPC</div></div>
+        <div class="stat"><div class="n"><b>02</b>Транзакції</div><div class="v" id="sTx">—</div><div class="s">кліки × CR</div></div>
+        <div class="stat"><div class="n"><b>03</b>Фактична CPA</div><div class="v" id="sCpa">—</div><div class="s">повні витрати / тр.</div></div>
+        <div class="stat"><div class="n"><b>04</b>Допустима CPA</div><div class="v" id="sTargetCpa">—</div><div class="s">СЧ × ДРР</div></div>
+        <div class="stat"><div class="n"><b>05</b>ROAS</div><div class="v" id="sRoas">—</div><div class="s">дохід / повні вит.</div></div>
+        <div class="stat"><div class="n"><b>06</b>Фактична ДРР</div><div class="v" id="sCrr">—</div><div class="s">витрати / дохід</div></div>
+      </div>
+
+      <div class="splitcard">
+        <h3>Структура маркетингових витрат</h3>
+        <div class="row"><span class="k">Рекламний бюджет (нетто)</span><span class="vv" id="cBudget">—</span></div>
+        <div class="row"><span class="k">ПДВ <span id="vatLbl"></span></span><span class="vv" id="cVat">—</span></div>
+        <div class="row"><span class="k">Комісія агенції <span id="feeLbl"></span></span><span class="vv" id="cFee">—</span></div>
+        <div class="row total"><span class="k">Повні витрати</span><span class="vv" id="cTotal">—</span></div>
+      </div>
+
+      <button class="exportbtn" onclick="exportXlsx()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Вивантажити в Google Sheets (.xlsx)
+      </button>
+    </div>
+  </div>
+
+  <div class="foot">
+    Розрахунок орієнтовний і будується на введених середніх значеннях. Реальні CPC, CR і середній чек коливаються по аудиторіях, плейсментах і періодах.<br>
+    Promodo · інструмент для планування запусків у Meta Ads
+  </div>
+</div>
+
+<script>
+let mode='forward';
+let goal='tx';
+let feeBase='net';
+
+function setMode(m){
+  mode=m;
+  document.getElementById('mForward').classList.toggle('on',m==='forward');
+  document.getElementById('mReverse').classList.toggle('on',m==='reverse');
+  document.getElementById('budgetField').style.display = m==='forward'?'block':'none';
+  document.getElementById('goalFields').style.display = m==='reverse'?'block':'none';
+  calc();
+}
+function setGoal(g){
+  goal=g;
+  document.getElementById('gTx').classList.toggle('on',g==='tx');
+  document.getElementById('gRev').classList.toggle('on',g==='rev');
+  document.getElementById('goalTxField').style.display = g==='tx'?'block':'none';
+  document.getElementById('goalRevField').style.display = g==='rev'?'block':'none';
+  calc();
+}
+function setFeeBase(b){
+  feeBase=b;
+  document.getElementById('fbNet').classList.toggle('on',b==='net');
+  document.getElementById('fbGross').classList.toggle('on',b==='gross');
+  calc();
+}
+
+const num = id => parseFloat(document.getElementById(id).value)||0;
+const fmtMoney = v => isFinite(v)? Math.round(v).toLocaleString('uk-UA')+' грн' : '—';
+const fmtInt = v => isFinite(v)? Math.round(v).toLocaleString('uk-UA') : '—';
+const fmtX = v => isFinite(v)? v.toFixed(2)+'×' : '—';
+const fmtPct = v => isFinite(v)? v.toFixed(1)+'%' : '—';
+
+function fullCost(budget){
+  const vat = num('vat')/100, fee = num('fee')/100;
+  const vatAmt = budget*vat;
+  const feeAmt = feeBase==='gross' ? (budget+vatAmt)*fee : budget*fee;
+  return {vatAmt, feeAmt, total: budget+vatAmt+feeAmt};
+}
+
+function compute(){
+  const aov=num('aov'), cr=num('cr')/100, cpc=num('cpc'), crr=num('crr')/100;
+  let budget;
+
+  if(mode==='forward'){
+    budget = num('budget');
+  } else {
+    let txGoal;
+    if(goal==='tx'){ txGoal = num('goalTx'); }
+    else { txGoal = aov>0 ? num('goalRev')/aov : 0; }
+    const clicksNeeded = cr>0 ? txGoal/cr : 0;
+    budget = clicksNeeded*cpc;
+  }
+
+  const clicks = cpc>0 ? budget/cpc : 0;
+  const tx = clicks*cr;
+  const revenue = tx*aov;
+  const c = fullCost(budget);
+  const actualCpa = tx>0 ? c.total/tx : Infinity;
+  const targetCpa = aov*crr;
+  const roas = c.total>0 ? revenue/c.total : 0;
+  const roasNet = budget>0 ? revenue/budget : 0;
+  const actualCrr = revenue>0 ? c.total/revenue*100 : Infinity;
+  return {aov,cr,cpc,crr,budget,clicks,tx,revenue,c,actualCpa,targetCpa,roas,roasNet,actualCrr};
+}
+
+function calc(){
+  const r = compute();
+  const {budget,clicks,tx,revenue,c,actualCpa,targetCpa,roas,roasNet,actualCrr}=r;
+
+  // hero
+  if(mode==='reverse'){
+    document.getElementById('heroLbl').textContent='Потрібний рекламний бюджет (нетто)';
+    document.getElementById('heroVal').textContent=fmtMoney(budget);
+    document.getElementById('heroNote').textContent='Повні витрати з ПДВ і комісією: '+fmtMoney(c.total);
+  } else {
+    document.getElementById('heroLbl').textContent='Очікуваний дохід із запуску';
+    document.getElementById('heroVal').textContent=fmtMoney(revenue);
+    document.getElementById('heroNote').textContent='ROAS на повні витрати '+fmtX(roas)+' · на чистий бюджет '+fmtX(roasNet);
+  }
+
+  document.getElementById('sClicks').textContent=fmtInt(clicks);
+  document.getElementById('sTx').textContent=fmtInt(tx);
+  document.getElementById('sCpa').textContent=fmtMoney(actualCpa);
+  document.getElementById('sTargetCpa').textContent=fmtMoney(targetCpa);
+  document.getElementById('sRoas').textContent=fmtX(roas);
+  document.getElementById('sCrr').textContent=fmtPct(actualCrr);
+
+  document.getElementById('vatLbl').textContent='('+num('vat')+'%)';
+  document.getElementById('feeLbl').textContent='('+num('fee')+'%'+(feeBase==='gross'?' від бюджету+ПДВ':'')+')';
+  document.getElementById('cBudget').textContent=fmtMoney(budget);
+  document.getElementById('cVat').textContent=fmtMoney(c.vatAmt);
+  document.getElementById('cFee').textContent=fmtMoney(c.feeAmt);
+  document.getElementById('cTotal').textContent=fmtMoney(c.total);
+
+  // verdict — порівнюємо фактичну CPA з допустимою
+  const v=document.getElementById('verdict'), vt=document.getElementById('verdictTxt');
+  v.classList.remove('good','warn','bad');
+  if(!isFinite(actualCpa)||targetCpa<=0||tx<=0){
+    v.classList.add('warn');
+    vt.textContent='Замало даних для оцінки. Перевір CR, CPC і середній чек.';
+  } else {
+    const ratio = actualCpa/targetCpa;
+    const head = mode==='reverse'?'За такого бюджету ':'';
+    if(ratio<=0.85){
+      v.classList.add('good');
+      vt.textContent=head+'фактична CPA ('+fmtMoney(actualCpa)+') нижча за допустиму ('+fmtMoney(targetCpa)+'). Запуск окуповується із запасом, є простір масштабувати.';
+    } else if(ratio<=1.05){
+      v.classList.add('warn');
+      vt.textContent=head+'фактична CPA ('+fmtMoney(actualCpa)+') близько до допустимої ('+fmtMoney(targetCpa)+'). На межі — окупність тримається, але буфера майже нема.';
+    } else {
+      v.classList.add('bad');
+      vt.textContent=head+'фактична CPA ('+fmtMoney(actualCpa)+') вища за допустиму ('+fmtMoney(targetCpa)+'). Щоб вийти в ціль, треба піднімати CR/чек, знижувати CPC або послаблювати ДРР.';
+    }
+  }
+}
+function exportXlsx(){
+  const r = compute();
+  const round = v => isFinite(v)? Math.round(v) : '';
+  const r2 = v => isFinite(v)? Math.round(v*100)/100 : '';
+
+  const modeLbl = mode==='forward' ? 'Від бюджету → результат' : 'Від цілі → бюджет';
+  let goalLbl = '';
+  if(mode==='reverse'){
+    goalLbl = goal==='tx' ? ('Ціль: '+num('goalTx')+' транзакцій') : ('Ціль: '+round(num('goalRev'))+' грн доходу');
+  }
+  const now = new Date();
+  const stamp = now.toLocaleString('uk-UA');
+
+  const rows = [
+    ['Калькулятор окупності Meta Ads — Promodo'],
+    ['Дата розрахунку', stamp],
+    ['Режим', modeLbl + (goalLbl ? ('  ·  '+goalLbl) : '')],
+    [],
+    ['ВХІДНІ ДАНІ'],
+    ['Рекламний бюджет (нетто), грн', round(r.budget)],
+    ['Середній чек, грн', round(r.aov)],
+    ['Конверсія сайту CR, %', num('cr')],
+    ['Поточний CPC, грн', num('cpc')],
+    ['ПДВ, %', num('vat')],
+    ['Комісія агенції, %', num('fee')],
+    ['База комісії', feeBase==='gross' ? 'від бюджету+ПДВ' : 'від бюджету'],
+    ['Цільова ДРР, %', num('crr')],
+    [],
+    ['СТРУКТУРА ВИТРАТ'],
+    ['Рекламний бюджет (нетто), грн', round(r.budget)],
+    ['ПДВ, грн', round(r.c.vatAmt)],
+    ['Комісія агенції, грн', round(r.c.feeAmt)],
+    ['Повні витрати, грн', round(r.c.total)],
+    [],
+    ['РЕЗУЛЬТАТИ'],
+    ['Кліки / трафік', round(r.clicks)],
+    ['Транзакції', round(r.tx)],
+    ['Дохід, грн', round(r.revenue)],
+    ['Фактична CPA, грн', round(r.actualCpa)],
+    ['Допустима CPA, грн', round(r.targetCpa)],
+    ['ROAS (на повні витрати)', r2(r.roas)],
+    ['ROAS (на чистий бюджет)', r2(r.roasNet)],
+    ['Фактична ДРР, %', r2(r.actualCrr)],
+  ];
+
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols'] = [{wch:34},{wch:22}];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Розрахунок');
+  const fn = 'meta-calc_'+now.toISOString().slice(0,10)+'.xlsx';
+  XLSX.writeFile(wb, fn);
+}
+
+calc();
+</script>
+</body>
+</html>
